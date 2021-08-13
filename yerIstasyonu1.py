@@ -47,8 +47,8 @@ cap = None
 out = None
 paketSayisi = 0
 
-host = "192.168.217.229" # burasi statik ip ile degisecek
-port = 5003
+host = "192.168.167.204" # burasi statik ip ile degisecek
+port = 5000
 
 yer_istasyonu_socket = socket.socket()
 yer_istasyonu_socket.connect((host, port))
@@ -655,7 +655,7 @@ class Ui_MainWindow(object):
         gps_latitude, gps_longitude, gps_altitude = float(son_telemetri[9]), float(son_telemetri[10]), float(
             son_telemetri[11])
         uydu_statusu = int(son_telemetri[12])
-        pitch, roll, yaw = float(son_telemetri[13]), float(son_telemetri[14]), float(son_telemetri[15])
+        pitch, roll, yaw = float(son_telemetri[13]), float(son_telemetri[15]), float(son_telemetri[14])
         self.glWidget.setRotX(pitch)
         self.glWidget.setRotY(roll)
         self.glWidget.setRotZ(yaw)
