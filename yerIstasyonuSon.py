@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import*
 import datetime as dt
 import matplotlib as plt
 import numpy as np
+from pyqtlet.mapwidget import MapWidget
 from MplWidget import *
 import random
 import matplotlib
@@ -11,6 +12,9 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import cv2
+import folium
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+import io
 
 xs = []
 ys = []
@@ -99,7 +103,7 @@ class Ui_MainWindow(object):
         self.gyroWidget.setGeometry(QtCore.QRect(1420, 330, 391, 271))
         self.gyroWidget.setStyleSheet("background-color: white;")
         self.gyroWidget.setObjectName("gyroWidget")
-        self.lokasyonWidget = QtWidgets.QWidget(self.centralwidget)
+        self.lokasyonWidget = QWebEngineView(self.centralwidget)
         self.lokasyonWidget.setGeometry(QtCore.QRect(1420, 660, 391, 271))
         self.lokasyonWidget.setStyleSheet("background-color: white;")
         self.lokasyonWidget.setObjectName("lokasyonWidget")
@@ -374,6 +378,7 @@ class Ui_MainWindow(object):
         self.menuHarita.setTitle(_translate("MainWindow", "Harita"))
         self.menuAnlikGoruntu.setTitle(_translate("MainWindow", "Anlık Görüntü"))
         # self.baslatButton.clicked.connect(self.realTimeVideo)
+        self.mapShowing()
         self.update_graph()
         self.update_graph2()
         self.update_graph3()
@@ -381,6 +386,7 @@ class Ui_MainWindow(object):
         self.update_graph5()
         self.update_graph6()
         self.timers()
+    
         
 
     def update_graph(self):
@@ -542,6 +548,19 @@ class Ui_MainWindow(object):
     #         else:
     #             break
     #         cv2.destroyAllWindows()
+
+    def mapShowing(self):
+        coordinate = (40.21799432168916, 28.847811135149378)
+        m = folium.Map(
+            tiles='Stamen Terrain',
+            zoom_start=14,
+            location=coordinate
+        )
+        folium.Marker([40.21795441621626, 28.847589029741034]).add_to(m)
+
+        data = io.BytesIO()
+        m.save(data, close_file=False)
+        self.lokasyonWidget.setHtml(data.getvalue().decode())
 
 
 if __name__ == "__main__":
