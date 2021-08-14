@@ -11,7 +11,7 @@ from MplWidget import *
 import random
 import matplotlib
 import sys
-
+import os
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -47,8 +47,8 @@ cap = None
 out = None
 paketSayisi = 0
 
-host = "192.168.167.204" # burasi statik ip ile degisecek
-port = 5000
+host = "192.168.124.204" # burasi statik ip ile degisecek
+port = 5002
 
 yer_istasyonu_socket = socket.socket()
 yer_istasyonu_socket.connect((host, port))
@@ -351,6 +351,7 @@ class Ui_MainWindow(object):
         self.ayrilButton.setGeometry(QtCore.QRect(70, 30, 111, 31))
         self.ayrilButton.setStyleSheet("background-color: black;color:white;")
         self.ayrilButton.setObjectName("ayrilButton")
+        self.ayrilButton.clicked.connect(self.sendTwoCommand)
         self.manuelTahrikGroup = QtWidgets.QGroupBox(self.centralwidget)
         self.manuelTahrikGroup.setGeometry(QtCore.QRect(760, 10, 271, 81))
         font = QtGui.QFont()
@@ -363,10 +364,12 @@ class Ui_MainWindow(object):
         self.baslatButton.setGeometry(QtCore.QRect(10, 30, 111, 31))
         self.baslatButton.setStyleSheet("background-color: black;color:white;")
         self.baslatButton.setObjectName("baslatButton")
+        self.baslatButton.clicked.connect(self.sendThreeCommand)
         self.durdurButton = QtWidgets.QPushButton(self.manuelTahrikGroup)
         self.durdurButton.setGeometry(QtCore.QRect(150, 30, 111, 31))
         self.durdurButton.setStyleSheet("background-color: black;color:white;")
         self.durdurButton.setObjectName("durdurButton")
+        self.durdurButton.clicked.connect(self.sendFourCommand)
         self.videoAktarimiGroup = QtWidgets.QGroupBox(self.centralwidget)
         self.videoAktarimiGroup.setGeometry(QtCore.QRect(1060, 10, 301, 81))
         self.videoAktarimiGroup.setStyleSheet("background-color: white;border-radius:15px;")
@@ -407,7 +410,7 @@ class Ui_MainWindow(object):
         self.paketSayisiGroup.setStyleSheet("background-color:white;border-radius:15px;")
         self.paketSayisiGroup.setObjectName("paketSayisiGroup")
         self.paketSayisiLabel = QtWidgets.QLabel(self.paketSayisiGroup)
-        self.paketSayisiLabel.setGeometry(QtCore.QRect(90, 40, 21, 51))
+        self.paketSayisiLabel.setGeometry(QtCore.QRect(75, 20, 100, 100))
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
@@ -422,6 +425,7 @@ class Ui_MainWindow(object):
         self.kalibreEtButton.setGeometry(QtCore.QRect(30, 30, 111, 31))
         self.kalibreEtButton.setStyleSheet("background-color: black;color:white;border-radius:15px;")
         self.kalibreEtButton.setObjectName("kalibreEtButton")
+        self.kalibreEtButton.clicked.connect(self.sendOneCommand)
         self.graphicsView_2.raise_()
         self.graphicsView.raise_()
         self.grafikler.raise_()
@@ -475,6 +479,7 @@ class Ui_MainWindow(object):
 
 
 
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "BTÜ Ülgen Yer İstasyonu"))
@@ -506,6 +511,7 @@ class Ui_MainWindow(object):
         self.videoAktarimiGroup.setTitle(_translate("MainWindow", "Video Aktarımı"))
         self.label_20.setText(_translate("MainWindow", "Dosya Seç:"))
         self.dosyaSecButton.setText(_translate("MainWindow", "..."))
+        self.dosyaSecButton.clicked.connect(self.chooseVideo)
         self.gonderButton.setText(_translate("MainWindow", "Gönder"))
         self.donusGroup.setTitle(_translate("MainWindow", "Dönüş Sayısı:"))
         self.donusSayisiLabel.setText(_translate("MainWindow", "3"))
@@ -637,6 +643,27 @@ class Ui_MainWindow(object):
         self.gpsAltitudeWidget.canvas.axes.plot(xs6, ys6, linewidth=2, label="{1}")
         # labellines.labelLines(self.MplWidget.canvas.axes.get_lines())
         self.gpsAltitudeWidget.canvas.draw()
+
+    def sendOneCommand(self):
+        global yer_istasyonu_socket
+        komut = "1"
+        yer_istasyonu_socket.send(komut.encode())
+
+    def sendTwoCommand(self):
+        global yer_istasyonu_socket
+        komut = "2"
+        yer_istasyonu_socket.send(komut.encode())
+
+    def sendThreeCommand(self):
+        global yer_istasyonu_socket
+        komut = "3"
+        yer_istasyonu_socket.send(komut.encode())
+
+    def sendFourCommand(self):
+        global yer_istasyonu_socket
+        komut = "4"
+        yer_istasyonu_socket.send(komut.encode())
+
     def getData(self):
         global yer_istasyonu_socket
         global takim_no,paket_numarasi,basinc,yukseklik,inis_hizi,sicaklik,pil_gerilimi,gps_altitude,gps_latitude,gps_longitude,uydu_statusu,pitch,roll,yaw,donus_sayisi,video_aktarim_bilgisi
@@ -661,6 +688,22 @@ class Ui_MainWindow(object):
         self.glWidget.setRotZ(yaw)
         donus_sayisi = int(son_telemetri[16])
         video_aktarim_bilgisi = str(son_telemetri[17])
+        self.paketSayisiLabel.setText(str(paket_numarasi))
+        self.statuNoLabel.setText(str(uydu_statusu))
+        self.donusSayisiLabel.setText(str(donus_sayisi))
+
+
+    def chooseVideo(self):
+        file_filter = 'Data File (*.xlsx *.csv *.dat);; Excel File (*.xlsx *.xls)'
+        response = QFileDialog.getOpenFileName(
+            parent=self,
+            caption='Select a data file',
+            directory=os.getcwd(),
+            filter=file_filter,
+            initialFilter='Excel File (*.xlsx *.xls)'
+        )
+        print(response)
+        return response[0]
 
 
 
