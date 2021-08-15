@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, QtOpenGL
+from threading import Thread
 from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import *
 import datetime as dt
@@ -33,7 +34,7 @@ uydu_statusu = 0
 pitch = roll = yaw = 0
 donus_sayisi = 0
 video_aktarim_bilgisi = ""
-""
+video = ""
 xs = []
 ys = []
 xs2 = []
@@ -50,7 +51,7 @@ cap = None
 out = None
 paketSayisi = 0
 
-host = "192.168.137.204" # burasi statik ip ile degisecek
+host = "192.168.104.229" # burasi statik ip ile degisecek
 port = 5003
 
 yer_istasyonu_socket = socket.socket()
@@ -390,6 +391,7 @@ class Ui_MainWindow(object):
         self.gonderButton.setGeometry(QtCore.QRect(170, 30, 111, 31))
         self.gonderButton.setStyleSheet("background-color: black;color:white;")
         self.gonderButton.setObjectName("gonderButton")
+        self.gonderButton.clicked.connect(self.sendFiveCommand)
         self.donusGroup = QtWidgets.QGroupBox(self.centralwidget)
         self.donusGroup.setGeometry(QtCore.QRect(50, 430, 201, 111))
         font = QtGui.QFont()
@@ -501,7 +503,7 @@ class Ui_MainWindow(object):
         self.label_15.setText(_translate("MainWindow", "STATÜ:"))
         self.statuNoLabel.setText(_translate("MainWindow", "STATÜ NO"))
         self.videoAktarimLabel.setText(_translate("MainWindow", "VIDEO AKTARIM BİLGİSİ"))
-        self.videoAktarimBilgisiLabel.setText(_translate("MainWindow", "DOSYA SEÇİLMEDİ"))
+        self.videoAktarimBilgisiLabel.setText(_translate("MainWindow", "Hayır"))
         self.gyroLabel.setText(_translate("MainWindow", "      X: 123123        Y: 12312312        Z: 12123123      "))
         self.lokasyonLabel.setText(
             _translate("MainWindow", "      X: 123123        Y: 12312312        Z: 12123123      "))
@@ -667,6 +669,27 @@ class Ui_MainWindow(object):
         global yer_istasyonu_socket
         komut = "4"
         yer_istasyonu_socket.send(komut.encode())
+    
+    def sendFiveCommand(self):
+        global yer_istasyonu_socket,video
+        komut = "5 "+str(len(video))
+        yer_istasyonu_socket.send(komut.encode())
+        yer_istasyonu_socket.send(video)
+        #dThread = Thread(target=self.download())
+        #dThread.start()
+        # download = DownloadVideo()
+        # download.start()
+        # download.dsignal.connect(self.downbitti)
+    
+    def download(self):
+        global yer_istasyonu_socket,video
+        komut = "5 "+str(len(video))
+        yer_istasyonu_socket.send(komut.encode())
+        yer_istasyonu_socket.send(video)
+        #self.dsignal.emit(100)
+
+    def downbitti(self):
+         self.videoAktarimBilgisiLabel.setText("Evet")     
 
     def getData(self):
         global yer_istasyonu_socket,index
@@ -707,18 +730,22 @@ class Ui_MainWindow(object):
 
 
     def chooseVideo(self):
-        file_filter = 'Data File (*.xlsx *.csv *.dat);; Excel File (*.xlsx *.xls)'
+        global video
+        file_filter = 'Data File (*.mkv *mp4 *.avi);; Video File (*.mkv *.avi)'
         response = QFileDialog.getOpenFileName(
-            parent="",
+            parent=self.dosyaSecButton,
             caption='Select a data file',
             directory=os.getcwd(),
             filter=file_filter,
-            initialFilter='Excel File (*.xlsx *.xls)'
+            initialFilter='Video File (*.mkv *.avi)'
         )
-        print(response)
-        return response[0]
+        print(response[0])
+        
+        with open(response[0],"rb") as f:
+            video = f.read()
+            print(len(video))
 
-
+    
     def timers(self):
 
         self.timer0 = QtCore.QTimer()
@@ -870,6 +897,19 @@ class UpdateTable(QtCore.QThread) :
             self.table.setItem(index,16, QTableWidgetItem(self.arr[16]))
             self.table.setItem(index,17, QTableWidgetItem(self.arr[17]))
             self.usignal.emit(100)
+    
+# class DownloadVideo(QtCore.QThread) :
+#         def __init__(self):
+#             super(DownloadVideo,self).__init__()
+            
+#         dsignal = QtCore.pyqtSignal(int)
+#         def run(self):
+                
+#             global yer_istasyonu_socket,video
+#             komut = "5 "+str(len(video))
+#             yer_istasyonu_socket.send(komut.encode())
+#             yer_istasyonu_socket.send(video)
+#             self.dsignal.emit(100)
 
 if __name__ == "__main__":
     import sys
