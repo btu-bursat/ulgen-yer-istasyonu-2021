@@ -1,4 +1,4 @@
-# BTÜ Ülgen Takımı 2021 Uçuş Yazılımı
+# BTÜ Ülgen Takımı 2021 Yer İstasyonu Yazılımı
 
 2021 Teknofest Türksat Model Uydu Yarışması için, Bursa Teknik Üniversitesi Ülgen model uydu takımının yazmış olduğu yer istasyonu yazılımıdır.
 
